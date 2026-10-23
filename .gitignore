@@ -5,6 +5,4 @@ __pycache__/
 .env
 vectorstore/
 .pytest_cache/
-screenshots/*.png
-!screenshots/README.md
 .DS_Store
