@@ -10,6 +10,7 @@ de higiene y seguridad industrial.
                                     caliente desde el código (nunca hardcodeado).
 - GET  /health                  -> healthcheck simple.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -22,6 +23,7 @@ from fastapi import FastAPI, HTTPException
 
 load_dotenv()
 
+from app.env_check import validate_environment  # noqa: E402
 from app.graph import build_graph  # noqa: E402
 from app.hitl import router as hitl_router  # noqa: E402
 from app.job_store import JobStore  # noqa: E402
@@ -43,6 +45,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    validate_environment()
     settings = get_settings()
     init_observability()
 

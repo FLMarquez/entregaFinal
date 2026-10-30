@@ -9,6 +9,7 @@ Uso:
     python -m app.rag.ingest            # indexa solo si la base no existe o está vacía
     python -m app.rag.ingest --force    # borra la colección existente y reindexa todo
 """
+
 from __future__ import annotations
 
 import argparse
@@ -69,7 +70,7 @@ def collection_already_populated() -> bool:
             persist_directory=PERSIST_DIR,
         )
         return store._collection.count() > 0
-    except Exception:
+    except Exception:  # noqa: BLE001 - si no se puede leer la colección, se reindexa
         return False
 
 
@@ -129,6 +130,6 @@ if __name__ == "__main__":
 
     try:
         ingest(force=args.force)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI: cualquier falla termina con mensaje y exit 1
         print(f"[ingest] ERROR: {exc}", file=sys.stderr)
         sys.exit(1)
