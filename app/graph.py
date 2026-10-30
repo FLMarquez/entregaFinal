@@ -13,6 +13,7 @@ sí), lo que lo mantiene como única fuente de verdad sobre el estado del flujo
 -- incluida la decisión de pedir aprobación humana antes de cerrar un caso
 crítico (ver app/agents/supervisor.py::decide_next_agent).
 """
+
 from __future__ import annotations
 
 from langgraph.graph import END, START, StateGraph

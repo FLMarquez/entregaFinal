@@ -7,6 +7,7 @@ que cada nodo aparece como un span/trace propio en el dashboard -- condición
 necesaria para poder auditar "lo que ocurre bajo el capó", como pide la
 consigna, y no entregar un sistema que funciona pero es una caja negra.
 """
+
 from __future__ import annotations
 
 import logging

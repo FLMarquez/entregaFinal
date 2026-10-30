@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "intelligence-system-hys"
+version = "1.0.0"
+description = "RAG + agentes (Supervisor) + HITL sobre normativa de higiene y seguridad industrial."
+readme = "README.md"
+# Única versión con la que se construye la imagen y se corren los tests.
+requires-python = ">=3.12,<3.13"
+# Dependencias directas con versión exacta. El lock completo (incluye las
+# transitivas) está en requirements.txt y requirements-dev.txt: ver "Dependencias"
+# en el README para regenerarlos.
+dependencies = [
+    "fastapi==0.161.1",
+    "uvicorn[standard]==0.54.0",
+    "pydantic==2.14.1",
+    "pydantic-settings==2.16.1",
+    "python-dotenv==1.2.4",
+    "redis==8.1.0",
+    "langgraph==1.2.16",
+    "langgraph-checkpoint-redis==0.5.2",
+    "langchain==1.4.7",
+    "langchain-core==1.7.0",
+    "langchain-community==0.4.2",
+    "langchain-text-splitters==1.1.3",
+    "langchain-chroma==1.1.0",
+    "langchain-google-genai==4.4.2",
+    "langchain-anthropic==1.7.6",
+    "langchain-openai==1.7.2",
+    "chromadb==1.5.9",
+    "tiktoken==0.14.0",
+    "langsmith==0.14.12",
+    "arize-phoenix-otel==0.17.2",
+    "openinference-instrumentation-langchain==0.1.79",
+    "httpx==0.28.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "ruff==0.17.3",
+    "mypy==2.4.1",
+    "pip-tools==7.6.2",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "integration: requiere Redis Stack real (TEST_REDIS_URL)",
+    "e2e: levanta la API real con uvicorn contra Redis Stack real (TEST_REDIS_URL)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "BLE", "ASYNC"]
+# El largo lo resuelve `ruff format`; lo que queda largo son strings que no conviene partir.
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["app", "scripts", "cli.py"]
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+plugins = ["pydantic.mypy"]

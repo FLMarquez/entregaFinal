@@ -168,8 +168,12 @@ cp .env.example .env
 # LANGSMITH_API_KEY / OBSERVABILITY_BACKEND=phoenix.
 
 ./run.sh
-# equivalente a: docker compose up --build
+# valida el .env y ejecuta: docker compose up --build
 ```
+
+Si falta una variable obligatoria, `run.sh` termina con un mensaje que indica cuál antes de
+levantar Docker. La API repite la validación al arrancar (`app/env_check.py`), así que también
+cubre a quien la levanta directo con `docker compose` o `uvicorn`.
 
 Esto levanta Redis Stack + la API en `http://localhost:8000`. Para Arize Phoenix
 self-hosted en vez de LangSmith:
@@ -179,14 +183,14 @@ docker compose --profile phoenix up -d phoenix
 # y en .env: OBSERVABILITY_BACKEND=phoenix
 ```
 
-### Opción B: entorno local (Python 3.12+)
+### Opción B: entorno local (Python 3.12)
 
 ```bash
 python -m venv .venv
 .venv\Scripts\Activate.ps1        # Windows
 # source .venv/bin/activate       # Linux/Mac
 
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 cp .env.example .env
 # completar .env
 
@@ -239,13 +243,34 @@ python cli.py "Un operario sufrió una fractura expuesta al caer de un andamio."
 
 ## Tests
 
+Suite completa, sin API keys ni `.env` y con un Redis propio y descartable:
+
 ```bash
-pip install pytest
-pytest -v
+docker compose -f docker-compose.test.yml run --rm --build tests
 ```
 
-No requieren API key ni Redis. Cubren:
+Con un entorno local, `pytest -v` corre los tests unitarios y omite los que necesitan Redis.
+Para incluirlos, `TEST_REDIS_URL=redis://localhost:6379/0 pytest -v`.
 
+**End-to-end** (`tests/e2e/test_api_hitl_flow.py`): levanta uvicorn en otro proceso contra Redis
+Stack real y recorre por HTTP el caso normal, el crítico aprobado y el crítico rechazado. También
+mata el proceso con SIGKILL mientras un caso está `AWAITING_APPROVAL`, lo vuelve a levantar y
+verifica que el caso se aprueba y termina sin repetir a los especialistas. Comprueba además que
+la API no arranca sin `GOOGLE_API_KEY`.
+
+**Integración** (`tests/integration/test_checkpoint_recovery.py`): `AsyncRedisSaver` y `JobStore`
+reales. Cierra y vuelve a crear checkpointer, grafo y JobStore, y verifica que el estado se
+recupera solo desde Redis, con la decisión de aprobar o rechazar y con varios casos pausados a la vez.
+
+En estos dos grupos el LLM y la ingesta del RAG están reemplazados por respuestas fijas
+(`tests/support/`) para que sean determinísticos y no gasten cuota: el resto (nodos, enrutamiento,
+`interrupt`, checkpointer, JobStore y API) es el código real. La calidad de las respuestas del
+modelo y la recuperación del RAG no se evalúan acá.
+
+**Unitarios** (sin API key ni Redis):
+
+- `test_env_check.py`: validación de entorno al arrancar, en la API y en `run.sh`.
+- `test_langsmith_metrics.py`: cálculo de percentiles y agrupación de trazas por ejecución.
 - `test_supervisor_logic.py`: rúbrica de suficiencia, garantía de terminación y el gate HITL
   (incluye simulación adversarial donde el LLM "insiste" en refinar indefinidamente).
 - `test_tools.py`: tools de análisis (clasificación de gravedad, validación, recomendaciones).
@@ -253,6 +278,30 @@ No requieren API key ni Redis. Cubren:
 - `test_api_schemas.py`: validación Pydantic de los esquemas de la API.
 - `test_graph_structure.py`: el grafo se construye con los nodos esperados y genera un
   diagrama Mermaid válido.
+
+## Calidad de código
+
+Se configuran en `pyproject.toml` y corren con las versiones fijadas:
+
+```bash
+docker compose -f docker-compose.test.yml run --rm --build tests sh -c "ruff check . && ruff format --check . && mypy"
+```
+
+## Dependencias
+
+- `pyproject.toml`: dependencias directas con versión exacta.
+- `requirements.txt` y `requirements-dev.txt`: lock completo, incluidas las transitivas, para
+  Linux y Python 3.12, que es el entorno de la imagen Docker. En Windows o Mac, `pip` puede sumar
+  paquetes propios de esa plataforma que no están en el lock; el entorno reproducible es Docker.
+- `Dockerfile` y los `docker-compose*.yml`: imágenes base con versión exacta, sin `latest`.
+
+Para actualizar una dependencia, cambiar su versión en `pyproject.toml` y regenerar los locks con
+Python 3.12 en Linux:
+
+```bash
+pip-compile --no-header --no-annotate --no-emit-options --strip-extras -o requirements.txt pyproject.toml
+pip-compile --no-header --no-annotate --no-emit-options --strip-extras --extra dev -o requirements-dev.txt pyproject.toml
+```
 
 ## Prueba de carga y observabilidad (mínimo 5 ejecuciones)
 
@@ -267,6 +316,27 @@ terminan. Con esas trazas generadas, entrar al dashboard (LangSmith o Phoenix) y
 cómo se distribuye la latencia entre nodos, qué nodo consume más tokens y el costo por
 ejecución; guardar capturas en [`screenshots/`](screenshots/) según
 [`screenshots/README.md`](screenshots/README.md).
+
+### Latencia y costo medidos
+
+Leídos de las trazas de LangSmith con `python scripts/langsmith_metrics.py --days 30`, el
+30/10/2026. Son las 12 ejecuciones del orquestador corridas el 22/10/2026 con `gemini-3.5-flash-lite`:
+
+| Resultado | Ejecuciones | Latencia p50 | Latencia p95 | Tokens promedio | Costo promedio | Costo p95 |
+|---|---:|---:|---:|---:|---:|---:|
+| Exitosa | 6 | 7.33 s | 42.54 s | 6,269 | $0.0035 | $0.0042 |
+| Con error | 6 | 40.19 s | 44.43 s | 4,047 | $0.0025 | $0.0035 |
+
+Cómo leer estos números:
+
+- **La muestra es chica.** Con 6 ejecuciones, el p95 coincide con el valor máximo, así que sirve
+  como referencia y no como un objetivo de servicio. Cinco de las seis exitosas tardaron menos de
+  10 s; la restante, 42.54 s.
+- **Las 6 fallidas son del mismo motivo.** Son la primera tanda concurrente, que terminó con `429
+  RESOURCE_EXHAUSTED` de Gemini, el límite de cuota del proveedor. Por eso se informan aparte.
+- **Una ejecución es un caso completo.** Si tuvo HITL, se suman sus dos trazas (hasta la pausa y
+  desde la reanudación), y la latencia no incluye el tiempo de espera de la decisión humana.
+- **El costo es la estimación de LangSmith** según tokens y modelo, no un importe facturado.
 
 ## Manejo de errores
 
@@ -283,6 +353,7 @@ EntregaFINAL/
 │   ├── graph.py                # StateGraph: supervisor + especialistas + HITL
 │   ├── state.py                  # OrchestratorState (esquema del estado compartido)
 │   ├── settings.py                 # Configuración vía variables de entorno (pydantic-settings)
+│   ├── env_check.py                # Validación del entorno al arrancar
 │   ├── schemas.py                    # Modelos Pydantic de la API
 │   ├── llm_provider.py                 # Selección de proveedor de LLM + rotación de keys
 │   ├── rotating_llm.py                   # ChatGoogleGenerativeAI con rotación de API keys
@@ -305,15 +376,18 @@ EntregaFINAL/
 │       └── formatting.py                                           # Formateo compartido de citas
 ├── data/                      # Base de conocimiento (marco normativo, EPP, trabajo en
 │                                 altura, riesgo químico, primeros auxilios, reporte)
-├── tests/                     # Tests offline (sin API key ni Redis)
+├── tests/                     # Unitarios, integración y E2E (ninguno usa LLM ni API keys)
 ├── scripts/load_test.py       # 6 ejecuciones concurrentes para poblar el dashboard
+├── scripts/langsmith_metrics.py # Latencia p50/p95 y costo por ejecución desde LangSmith
 ├── screenshots/                # Capturas del dashboard de observabilidad
 ├── cli.py                       # Demo local sin Redis/API
 ├── docker-compose.yml              # Redis Stack + API (+ Phoenix opcional)
+├── docker-compose.test.yml         # Suite completa con un Redis descartable
 ├── Dockerfile
-├── run.sh                             # Levanta todo con un solo comando
-├── requirements.txt
-├── pytest.ini
+├── run.sh                             # Valida el .env y levanta todo con un solo comando
+├── pyproject.toml                     # Dependencias directas + pytest, ruff y mypy
+├── requirements.txt                   # Lock de producción
+├── requirements-dev.txt               # Lock de desarrollo y tests
 ├── .env.example
 └── .gitignore
 ```

@@ -6,14 +6,15 @@ Dos de las consultas describen incidentes graves/fatales a propósito, para
 disparar el flujo human-in-the-loop; el script las aprueba automáticamente
 para poder medir la corrida completa de punta a punta.
 
-El costo por ejecución y la latencia p95 "oficiales" (a capturar en
-/screenshots) se leen del dashboard de LangSmith/Phoenix, no de este script:
+El costo por ejecución y la latencia p95 se calculan después sobre estas trazas con
+scripts/langsmith_metrics.py, no con este script:
 acá solo se generan las trazas y se imprime una latencia aproximada del lado
 del cliente, como referencia.
 
 Uso:
     python scripts/load_test.py
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -71,7 +72,7 @@ async def main() -> None:
     for r in results:
         print(
             f"- {r['job_id']}: status={r['status']} "
-            f"latencia={r['latency_s']:.2f}s input=\"{r['input'][:60]}\""
+            f'latencia={r["latency_s"]:.2f}s input="{r["input"][:60]}"'
         )
 
     print(f"\nLatencia p95 aproximada (medida en el cliente): {p95:.2f}s")

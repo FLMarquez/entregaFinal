@@ -8,6 +8,7 @@ vectorial entre la consulta y los documentos indexados deja de tener sentido
 (capa gratuita), independientemente del `MODEL_PROVIDER` elegido para el chat
 de los agentes en `app/llm_provider.py`.
 """
+
 from __future__ import annotations
 
 import os
@@ -47,4 +48,6 @@ def get_rag_llm(temperature: float = 0.0):
     """LLM de generación para la cadena RAG directa (`rag_chain.py`, `POST /rag/query`)."""
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model=LLM_MODEL, google_api_key=GOOGLE_API_KEY, temperature=temperature)
+    return ChatGoogleGenerativeAI(
+        model=LLM_MODEL, google_api_key=GOOGLE_API_KEY, temperature=temperature
+    )

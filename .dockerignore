@@ -1,0 +1,12 @@
+.env
+.git
+.venv
+venv
+.claude
+vectorstore
+screenshots
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+.mypy_cache

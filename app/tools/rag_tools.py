@@ -12,6 +12,7 @@ implementa el método sync, LangChain lo corre en un thread aparte para no
 bloquear el event loop), en línea con el resto de la app -- ninguna llamada a
 LLM/DB del sistema usa E/S bloqueante dentro de una función `async def`.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -44,7 +45,9 @@ def _get_vectorstore():
 
 
 class BuscarNormativaInput(BaseModel):
-    query: str = Field(description="Consulta en lenguaje natural sobre higiene y seguridad industrial.")
+    query: str = Field(
+        description="Consulta en lenguaje natural sobre higiene y seguridad industrial."
+    )
 
 
 @tool("buscar_normativa_seguridad", args_schema=BuscarNormativaInput)

@@ -2,6 +2,7 @@
 Redis): construir el grafo solo registra los nodos, no llama a ningún LLM
 (los agentes se instancian de forma perezosa recién al ejecutarse).
 """
+
 from app.graph import build_graph
 
 

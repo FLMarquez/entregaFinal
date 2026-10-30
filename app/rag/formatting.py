@@ -5,6 +5,7 @@ tanto la cadena RAG directa (`rag_chain.py`) como la tool del Agente de
 Investigación (`tools/rag_tools.py`), para que el formato de citas sea
 idéntico en ambos casos y no se duplique la lógica.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

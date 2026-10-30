@@ -19,6 +19,7 @@ fatal) Y al menos una recomendación concreta. Si además el caso es crítico
 gate `human_approval` (ver app/hitl.py) hasta que un humano confirme el
 cierre -- ver `decide_next_agent`.
 """
+
 from __future__ import annotations
 
 import re

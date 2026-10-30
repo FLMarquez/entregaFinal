@@ -11,6 +11,7 @@ que sigue siendo un `ChatGoogleGenerativeAI` real (compatible con
 Los embeddings del RAG se configuran aparte, en `app/rag/rag_settings.py`
 (siempre Gemini), porque son un componente independiente del chat LLM.
 """
+
 from __future__ import annotations
 
 import os
@@ -60,7 +61,9 @@ def get_llm(temperature: float = 0.0):
         if len(keys) == 1:
             from langchain_google_genai import ChatGoogleGenerativeAI
 
-            return ChatGoogleGenerativeAI(model=model, google_api_key=keys[0], temperature=temperature)
+            return ChatGoogleGenerativeAI(
+                model=model, google_api_key=keys[0], temperature=temperature
+            )
 
         from app.rotating_llm import RotatingChatGoogleGenerativeAI
 

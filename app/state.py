@@ -6,6 +6,7 @@ especialistas y para el gate de aprobación humana (HITL) en casos críticos,
 sin perder contexto entre agentes ni entre reinicios del servidor (el estado
 se persiste vía el checkpointer de Redis, ver `app/graph.py` y `app/main.py`).
 """
+
 from __future__ import annotations
 
 import operator

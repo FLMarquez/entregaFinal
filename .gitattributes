@@ -1,0 +1,2 @@
+# run.sh se ejecuta con bash también desde Windows: un CRLF lo rompería.
+*.sh text eol=lf

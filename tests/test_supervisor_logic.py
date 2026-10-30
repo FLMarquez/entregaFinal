@@ -5,6 +5,7 @@ pensadas para verificar -- sin gastar cuota de ninguna API -- que el grafo
 SIEMPRE termina, que las reglas de refinamiento se respetan, y que el gate de
 aprobación humana para casos críticos se dispara exactamente una vez.
 """
+
 from app.agents.supervisor import decide_next_agent, is_analysis_sufficient
 
 
@@ -71,7 +72,14 @@ def test_es_terminacion_garantizada_incluso_con_caso_critico():
 
     for _ in range(50):  # cota de seguridad del propio test
         next_agent = decide_next_agent(
-            has_research, has_analysis, sufficient, refinements_used, steps, True, is_critical, approved
+            has_research,
+            has_analysis,
+            sufficient,
+            refinements_used,
+            steps,
+            True,
+            is_critical,
+            approved,
         )
         visited.append(next_agent)
         if next_agent == "FINISH":

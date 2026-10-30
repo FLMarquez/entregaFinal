@@ -1,6 +1,7 @@
 """Tests de validación de los esquemas Pydantic de la API (sin levantar el
 servidor ni requerir Redis/API keys).
 """
+
 import pytest
 from pydantic import ValidationError
 

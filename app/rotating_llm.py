@@ -9,6 +9,7 @@ siguiente API key de la lista y reintenta, en vez de propagar el error. Si se
 agotan todas las keys, sí propaga el error (no oculta un fallo real de cuota
 agotada por completo).
 """
+
 from __future__ import annotations
 
 from google.genai import Client

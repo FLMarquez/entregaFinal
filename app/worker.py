@@ -5,6 +5,7 @@ Si el agente falla en cualquier nodo (excepción de LLM, timeout, etc.), la
 excepción se captura acá y el job pasa a FAILED con el mensaje de error, en
 vez de dejar al cliente esperando para siempre en `GET /tasks/{id}`.
 """
+
 from __future__ import annotations
 
 import logging

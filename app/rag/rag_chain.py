@@ -8,6 +8,7 @@ explícitamente que no tiene esa información si la pregunta no puede
 responderse con los fragmentos recuperados (evita alucinaciones ante
 preguntas fuera de dominio).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -42,7 +43,7 @@ class RAGResponse(BaseModel):
     )
 
 
-_PARSER = PydanticOutputParser(pydantic_object=RAGResponse)
+_PARSER: PydanticOutputParser[RAGResponse] = PydanticOutputParser(pydantic_object=RAGResponse)
 
 _SYSTEM_PROMPT = """Eres un asistente técnico especializado en higiene y seguridad \
 industrial y accidentes laborales.

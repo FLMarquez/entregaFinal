@@ -1,0 +1,24 @@
+# Corre toda la suite (unitarios + integración + E2E) sin API keys ni .env, con un
+# Redis propio y descartable que no toca los datos de desarrollo:
+#   docker compose -f docker-compose.test.yml run --rm --build tests
+name: entregafinal-test
+
+services:
+  redis:
+    image: redis/redis-stack-server:7.4.0-v8
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  tests:
+    build:
+      context: .
+      target: test
+    environment:
+      TEST_REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ["pytest", "-v"]
