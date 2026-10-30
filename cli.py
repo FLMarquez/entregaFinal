@@ -8,6 +8,7 @@ Uso:
 Sin argumentos, corre una consulta de demo que fuerza el flujo completo
 Investigador -> Analista -> (posible aprobación humana por caso crítico).
 """
+
 from __future__ import annotations
 
 import asyncio

@@ -6,6 +6,7 @@ resultado final, error, y el payload de aprobación pendiente si corresponde.
 Todas las operaciones son asíncronas (`redis.asyncio`), nunca bloquean el
 event loop de FastAPI.
 """
+
 from __future__ import annotations
 
 import json

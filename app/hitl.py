@@ -15,6 +15,7 @@ researcher/analyst), la decisión de aprobar/rechazar queda registrada en el
 estado compartido y es el Supervisor -- única fuente de verdad del flujo --
 quien decide terminar (ver app/agents/supervisor.py::decide_next_agent).
 """
+
 from __future__ import annotations
 
 import asyncio

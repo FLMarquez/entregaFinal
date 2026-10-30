@@ -5,6 +5,7 @@ deja explícito qué contrato expone la API, habilita la documentación
 automática de FastAPI (`/docs`) y valida entradas/salidas en un único lugar,
 tal como pide la consigna de la entrega final.
 """
+
 from __future__ import annotations
 
 from typing import Any, List, Optional
@@ -39,7 +40,9 @@ class TaskStatus(BaseModel):
 
 
 class ApprovalRequest(BaseModel):
-    approved: bool = Field(description="True para aprobar el cierre del caso, False para rechazarlo.")
+    approved: bool = Field(
+        description="True para aprobar el cierre del caso, False para rechazarlo."
+    )
     comment: Optional[str] = Field(default=None, description="Comentario del aprobador humano.")
 
 

@@ -10,6 +10,7 @@ Para evitar la "contaminación de contexto": el nodo NO le pasa al agente todo
 `state["messages"]` (que incluye mensajes del Supervisor y del Analista). Le
 pasa únicamente la consulta del usuario, en un `HumanMessage` nuevo.
 """
+
 from __future__ import annotations
 
 import re
@@ -57,8 +58,6 @@ async def research_node(state: OrchestratorState) -> dict:
         "research_data": final_text,
         "fuentes": fuentes,
         "messages": [AIMessage(content=final_text, name="researcher")],
-        "contributions": [
-            {"agent": "researcher", "summary": final_text[:200], "step": step}
-        ],
+        "contributions": [{"agent": "researcher", "summary": final_text[:200], "step": step}],
         "steps": step,
     }

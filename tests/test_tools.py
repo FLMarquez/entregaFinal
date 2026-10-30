@@ -1,5 +1,10 @@
 """Tests de las herramientas de análisis (sin LLM ni red)."""
-from app.tools.analysis_tools import clasificar_gravedad, generar_recomendaciones, validar_datos_incidente
+
+from app.tools.analysis_tools import (
+    clasificar_gravedad,
+    generar_recomendaciones,
+    validar_datos_incidente,
+)
 
 
 def test_clasificar_gravedad_detecta_fatal():

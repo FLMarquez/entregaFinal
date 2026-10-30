@@ -10,6 +10,7 @@ testeables de forma aislada, ver tests/test_tools.py):
   los riesgos detectados, siguiendo la jerarquía de controles (eliminación,
   sustitución, controles de ingeniería, controles administrativos, EPP).
 """
+
 from __future__ import annotations
 
 import re
@@ -18,20 +19,50 @@ from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
 PALABRAS_FATAL = {
-    "fallecimiento", "fallecio", "falleció", "muerte", "murio", "murió", "deceso",
+    "fallecimiento",
+    "fallecio",
+    "falleció",
+    "muerte",
+    "murio",
+    "murió",
+    "deceso",
 }
 PALABRAS_GRAVE = {
-    "amputación", "amputacion", "fractura expuesta", "hospitalización", "hospitalizacion",
-    "inconsciente", "pérdida de conciencia", "perdida de conciencia", "quemadura grave",
-    "electrocución", "electrocucion", "caída de altura", "caida de altura", "aplastamiento",
+    "amputación",
+    "amputacion",
+    "fractura expuesta",
+    "hospitalización",
+    "hospitalizacion",
+    "inconsciente",
+    "pérdida de conciencia",
+    "perdida de conciencia",
+    "quemadura grave",
+    "electrocución",
+    "electrocucion",
+    "caída de altura",
+    "caida de altura",
+    "aplastamiento",
 }
 PALABRAS_MODERADO = {
-    "fractura", "esguince", "corte profundo", "quemadura", "intoxicación", "intoxicacion",
-    "derivación médica", "derivacion medica", "sutura",
+    "fractura",
+    "esguince",
+    "corte profundo",
+    "quemadura",
+    "intoxicación",
+    "intoxicacion",
+    "derivación médica",
+    "derivacion medica",
+    "sutura",
 }
 PALABRAS_LEVE = {
-    "corte leve", "raspón", "raspon", "golpe leve", "cuasi accidente", "casi accidente",
-    "sin lesión", "sin lesion",
+    "corte leve",
+    "raspón",
+    "raspon",
+    "golpe leve",
+    "cuasi accidente",
+    "casi accidente",
+    "sin lesión",
+    "sin lesion",
 }
 
 
@@ -126,7 +157,10 @@ def generar_recomendaciones(texto: str) -> str:
             "Reforzar la capacitación/inducción de seguridad específica para el puesto "
             "y registrar su realización."
         )
-    if any(k in texto_low for k in ("quimico", "químico", "tóxico", "toxico", "inhalación", "inhalacion")):
+    if any(
+        k in texto_low
+        for k in ("quimico", "químico", "tóxico", "toxico", "inhalación", "inhalacion")
+    ):
         recomendaciones.append(
             "Verificar hojas de seguridad (MSDS) del producto y disponibilidad de "
             "protección respiratoria adecuada."

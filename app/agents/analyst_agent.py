@@ -8,6 +8,7 @@ recomendaciones. Si clasifica el caso como "grave" o "fatal", marca
 el Supervisor antes de poder cerrarse (ver app/agents/supervisor.py y
 app/hitl.py).
 """
+
 from __future__ import annotations
 
 import re
@@ -94,8 +95,6 @@ async def analyst_node(state: OrchestratorState) -> dict:
         "is_critical": is_critical,
         "critical_reason": critical_reason,
         "messages": [AIMessage(content=final_text, name="analyst")],
-        "contributions": [
-            {"agent": "analyst", "summary": final_text[:200], "step": step}
-        ],
+        "contributions": [{"agent": "analyst", "summary": final_text[:200], "step": step}],
         "steps": step,
     }
